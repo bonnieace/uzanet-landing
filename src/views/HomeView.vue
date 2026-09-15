@@ -1,6 +1,17 @@
 <script setup lang="ts">
-import TitleComponent from '@/components/TitleComponent.vue';
+import { ref } from 'vue'
+import TitleComponent from '@/components/TitleComponent.vue'
 
+const mobileMenuOpen = ref(false)
+const currentYear = new Date().getFullYear()
+const portalOrigin = (import.meta.env.VITE_PORTAL_URL || 'https://mikrotikke.netlify.app').replace(
+  /\/$/,
+  '',
+)
+const onboardingUrl = `${portalOrigin}/onboard`
+const apiDocsUrl = import.meta.env.VITE_API_DOCS_URL || 'https://api.uzanet.co.ke/docs'
+const showPricing = import.meta.env.VITE_SHOW_PUBLIC_PRICING === 'true'
+const showCustomerProof = import.meta.env.VITE_SHOW_CUSTOMER_PROOF === 'true'
 </script>
 
 <style>
@@ -68,6 +79,7 @@ import TitleComponent from '@/components/TitleComponent.vue';
                 >Developers</a
               >
               <a
+                v-if="showPricing"
                 href="#pricing"
                 class="nav-link text-gray-700 hover:text-blue-600 font-medium transition duration-300"
                 >Pricing</a
@@ -82,8 +94,12 @@ import TitleComponent from '@/components/TitleComponent.vue';
             <!-- Mobile Menu Button -->
             <div class="md:hidden flex items-center">
               <button
+                type="button"
                 @click="mobileMenuOpen = !mobileMenuOpen"
                 class="text-gray-700 focus:outline-none"
+                aria-label="Toggle navigation menu"
+                :aria-expanded="mobileMenuOpen"
+                aria-controls="mobile-navigation"
               >
                 <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path
@@ -107,7 +123,7 @@ import TitleComponent from '@/components/TitleComponent.vue';
         </div>
 
         <!-- Mobile Menu -->
-        <div v-if="mobileMenuOpen" class="md:hidden bg-white shadow-lg py-2">
+        <div id="mobile-navigation" v-if="mobileMenuOpen" class="md:hidden bg-white shadow-lg py-2">
           <a
             href="#services"
             @click="mobileMenuOpen = false"
@@ -127,6 +143,7 @@ import TitleComponent from '@/components/TitleComponent.vue';
             >Developers</a
           >
           <a
+            v-if="showPricing"
             href="#pricing"
             @click="mobileMenuOpen = false"
             class="block px-4 py-2 text-gray-700 hover:bg-blue-50"
@@ -311,11 +328,11 @@ import TitleComponent from '@/components/TitleComponent.vue';
                 <ul class="space-y-2 mb-4">
                   <li class="flex items-start">
                     <i class="fas fa-check text-green-500 mt-1 mr-2"></i>
-                    <span>Curated MikroTik routerboards & certified access points.</span>
+                    <span>MikroTik routers and access-point options for supported deployments.</span>
                   </li>
                   <li class="flex items-start">
                     <i class="fas fa-check text-green-500 mt-1 mr-2"></i>
-                    <span>Volume pricing, global shipping.</span>
+                    <span>Deployment sizing and hardware sourcing guidance.</span>
                   </li>
                   <li class="flex items-start">
                     <i class="fas fa-check text-green-500 mt-1 mr-2"></i>
@@ -401,7 +418,7 @@ import TitleComponent from '@/components/TitleComponent.vue';
                   </li>
                   <li class="flex items-start">
                     <i class="fas fa-check text-green-500 mt-1 mr-2"></i>
-                    <span>Seamless Microsoft AD/LDAP login support.</span>
+                    <span>Managed captive-portal journeys for supported MikroTik deployments.</span>
                   </li>
                   <li class="flex items-start">
                     <i class="fas fa-check text-green-500 mt-1 mr-2"></i>
@@ -656,19 +673,11 @@ import TitleComponent from '@/components/TitleComponent.vue';
                 <ul class="space-y-2">
                   <li class="flex items-start">
                   <i class="fas fa-check-circle text-green-500 mt-1 mr-2"></i>
-                  <span>RESTful endpoints for all network operations</span>
-                  </li>
-                  <li class="flex items-start">
-                  <i class="fas fa-check-circle text-green-500 mt-1 mr-2"></i>
-                  <span>Webhook support for real-time events</span>
+                  <span>Documented operator endpoints for supported network workflows</span>
                   </li>
                   <li class="flex items-start">
                   <i class="fas fa-check-circle text-green-500 mt-1 mr-2"></i>
                   <span>Comprehensive error handling</span>
-                  </li>
-                  <li class="flex items-start">
-                  <i class="fas fa-check-circle text-green-500 mt-1 mr-2"></i>
-                  <span>Rate limiting with clear headers</span>
                   </li>
                   <li class="flex items-start">
                   <i class="fas fa-check-circle text-green-500 mt-1 mr-2"></i>
@@ -681,14 +690,6 @@ import TitleComponent from '@/components/TitleComponent.vue';
                   <li class="flex items-start">
                   <i class="fas fa-check-circle text-green-500 mt-1 mr-2"></i>
                   <span>Hotspot & PPPoE management endpoints</span>
-                  </li>
-                  <li class="flex items-start">
-                  <i class="fas fa-check-circle text-green-500 mt-1 mr-2"></i>
-                  <span>Paystack payment processing integration</span>
-                  </li>
-                  <li class="flex items-start">
-                  <i class="fas fa-check-circle text-green-500 mt-1 mr-2"></i>
-                  <span>Africa's Talking SMS/Voice API integration</span>
                   </li>
                 </ul>
                 </div>
@@ -718,30 +719,38 @@ import TitleComponent from '@/components/TitleComponent.vue';
             <div class="w-full md:w-1/2">
               <div class="code-block">
                 <pre>
-// Fetch users example with Uzanet API
-const UZANET_API_KEY = 'YOUR_API_KEY';
+// Sign in, then fetch the current operator profile
+const credentials = new URLSearchParams({
+  username: 'YOUR_EMAIL',
+  password: 'YOUR_PASSWORD'
+});
 
-async function getNetworkUsers() {
+async function getOperatorProfile() {
   try {
-    const response = await fetch(
-      'https://api.uzanet.com/v1/users',
+    const authResponse = await fetch(
+      'https://api.uzanet.co.ke/api/v1/auth/token',
       {
-        headers: {
-          'Authorization': `Bearer ${UZANET_API_KEY}`,
-          'Content-Type': 'application/json'
-        }
+        method: 'POST',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        body: credentials
       }
     );
-    
+
+    if (!authResponse.ok) throw new Error('Sign-in failed');
+    const { access_token } = await authResponse.json();
+
+    const response = await fetch(
+      'https://api.uzanet.co.ke/api/v1/me',
+      { headers: { Authorization: `Bearer ${access_token}` } }
+    );
+
     if (!response.ok) {
       throw new Error(`API error: ${response.status}`);
     }
-    
-    const users = await response.json();
-    console.log(`Found ${users.length} users`);
-    return users;
+
+    return response.json();
   } catch (error) {
-    console.error('Failed to fetch users:', error);
+    console.error('Failed to fetch operator profile:', error);
   }
 }
 </pre
@@ -753,7 +762,7 @@ async function getNetworkUsers() {
       </section>
 
       <!-- Testimonials Section -->
-      <section class="py-24 bg-white">
+      <section v-if="showCustomerProof" class="py-24 bg-white">
         <div class="container mx-auto px-4 md:px-6 lg:px-8">
           
           <TitleComponent
@@ -850,17 +859,17 @@ async function getNetworkUsers() {
               subtitle="We collaborate with leading technology providers to deliver the best solutions for our customers.From payment gateways to hardware vendors, our partners help us ensure a seamless experience."
             />
             <div class="flex flex-wrap justify-center items-center gap-8 md:gap-12">
-              <img class="w-42 h-24 flex items-center justify-center" src="/MikroTik_logo_PNG_(4).png"></img>
-              <img class="w-42 h-24 flex items-center justify-center" src="/MicrosoftTeams-image_41.png"></img>
-              <img class="w-42 h-24 flex items-center justify-center" src="/pay.jpeg"></img>
+              <img class="w-42 h-24 flex items-center justify-center" src="/MikroTik_logo_PNG_(4).png" alt="" />
+              <img class="w-42 h-24 flex items-center justify-center" src="/MicrosoftTeams-image_41.png" alt="" />
+              <img class="w-42 h-24 flex items-center justify-center" src="/pay.jpeg" alt="" />
 
-              <img class="w-42 h-24 flex items-center justify-center" src="/kopo.png"></img>
+              <img class="w-42 h-24 flex items-center justify-center" src="/kopo.png" alt="" />
 
-              <img class="w-42 h-24 flex items-center justify-center" src="/talking.png"></img>
-              <img class="w-42 h-24 flex items-center justify-center" src="/starlink.jpeg"></img>
-              <img class="w-42 h-24 flex items-center justify-center" src="/ubi.jpeg"></img>
-              <img class="w-42 h-24 flex items-center justify-center" src="/tenda.jpeg"></img>
-              <img class="w-42 h-24 flex items-center justify-center" src="/wire.jpg"></img>
+              <img class="w-42 h-24 flex items-center justify-center" src="/talking.png" alt="" />
+              <img class="w-42 h-24 flex items-center justify-center" src="/starlink.jpeg" alt="" />
+              <img class="w-42 h-24 flex items-center justify-center" src="/ubi.jpeg" alt="" />
+              <img class="w-42 h-24 flex items-center justify-center" src="/tenda.jpeg" alt="" />
+              <img class="w-42 h-24 flex items-center justify-center" src="/wire.jpg" alt="" />
               
 
             </div>
@@ -868,7 +877,7 @@ async function getNetworkUsers() {
         </div>
       </section>
       <!-- Pricing Section -->
-      <section id="pricing" class="py-24 bg-gray-50">
+      <section v-if="showPricing" id="pricing" class="py-24 bg-gray-50">
         <div class="container mx-auto px-4 md:px-6 lg:px-8">
           <div class="text-center mb-12">
             
@@ -1038,7 +1047,7 @@ async function getNetworkUsers() {
                     <div>
                       <h5 class="font-bold">Mikrotik RB951Ui</h5>
                       <p class="text-sm text-gray-600">
-                        Dual-band home AP with five Ethernet ports
+                        2.4 GHz home AP with five Ethernet ports
                       </p>
                     </div>
                   </div>
@@ -1093,7 +1102,7 @@ async function getNetworkUsers() {
                       <h5 class="font-bold">L009UiGS-2HaxD-IN
 
                       </h5>
-                      <p class="text-sm text-gray-600">Cloud Core Router with high throughput</p>
+                      <p class="text-sm text-gray-600">Wi-Fi 6 router with eight Gigabit Ethernet ports</p>
                     </div>
                   </div>
                   <div class="flex items-center mb-6">
@@ -1166,7 +1175,7 @@ async function getNetworkUsers() {
       <!-- Footer -->
       <footer class="bg-gray-800 text-gray-300 py-12">
         <div class="container mx-auto px-4 md:px-6 lg:px-8">
-          <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
             <!-- Company Info -->
             <div>
               <h4 class="text-xl font-bold text-white mb-4">Uzanet</h4>
@@ -1175,13 +1184,11 @@ async function getNetworkUsers() {
                 operators.
               </p>
               <div class="flex space-x-4">
-                <a href="#" class="text-gray-400 hover:text-white transition duration-300">
-                  <i class="fab fa-linkedin text-xl"></i>
-                </a>
-                <a href="#" class="text-gray-400 hover:text-white transition duration-300">
-                  <i class="fab fa-twitter text-xl"></i>
-                </a>
-                <a href="#" class="text-gray-400 hover:text-white transition duration-300">
+                <a
+                  href="https://github.com/bonnieace/uzanet-landing"
+                  aria-label="Uzanet landing page on GitHub"
+                  class="text-gray-400 hover:text-white transition duration-300"
+                >
                   <i class="fab fa-github text-xl"></i>
                 </a>
               </div>
@@ -1192,77 +1199,40 @@ async function getNetworkUsers() {
               <h4 class="text-white font-bold mb-4">Resources</h4>
               <ul class="space-y-2">
                 <li>
-                  <a href="#" class="text-gray-400 hover:text-white transition duration-300"
-                    >Documentation</a
+                  <a :href="onboardingUrl" class="text-gray-400 hover:text-white transition duration-300"
+                    >Operator onboarding</a
                   >
                 </li>
                 <li>
-                  <a href="#" class="text-gray-400 hover:text-white transition duration-300"
+                  <a :href="portalOrigin" class="text-gray-400 hover:text-white transition duration-300"
+                    >Operator portal</a
+                  >
+                </li>
+                <li>
+                  <a :href="apiDocsUrl" class="text-gray-400 hover:text-white transition duration-300"
                     >API Reference</a
                   >
                 </li>
-                <li>
-                  <a href="#" class="text-gray-400 hover:text-white transition duration-300"
-                    >Tutorials</a
-                  >
-                </li>
-                <li>
-                  <a href="#" class="text-gray-400 hover:text-white transition duration-300"
-                    >Blog</a
-                  >
-                </li>
               </ul>
             </div>
 
-            <!-- Company -->
+            <!-- Explore -->
             <div>
-              <h4 class="text-white font-bold mb-4">Company</h4>
+              <h4 class="text-white font-bold mb-4">Explore</h4>
               <ul class="space-y-2">
                 <li>
-                  <a href="#" class="text-gray-400 hover:text-white transition duration-300"
-                    >About Us</a
+                  <a href="#services" class="text-gray-400 hover:text-white transition duration-300"
+                    >Services</a
                   >
                 </li>
                 <li>
-                  <a href="#" class="text-gray-400 hover:text-white transition duration-300"
-                    >Careers</a
+                  <a href="#how-it-works" class="text-gray-400 hover:text-white transition duration-300"
+                    >How it works</a
                   >
                 </li>
                 <li>
-                  <a href="#" class="text-gray-400 hover:text-white transition duration-300"
-                    >Partners</a
-                  >
-                </li>
-                <li>
-                  <a href="#" class="text-gray-400 hover:text-white transition duration-300"
-                    >Contact</a
-                  >
-                </li>
-              </ul>
-            </div>
-
-            <!-- Legal -->
-            <div>
-              <h4 class="text-white font-bold mb-4">Legal</h4>
-              <ul class="space-y-2">
-                <li>
-                  <a href="#" class="text-gray-400 hover:text-white transition duration-300"
-                    >Privacy Policy</a
-                  >
-                </li>
-                <li>
-                  <a href="#" class="text-gray-400 hover:text-white transition duration-300"
-                    >Terms of Service</a
-                  >
-                </li>
-                <li>
-                  <a href="#" class="text-gray-400 hover:text-white transition duration-300"
-                    >Data Processing</a
-                  >
-                </li>
-                <li>
-                  <a href="#" class="text-gray-400 hover:text-white transition duration-300"
-                    >Cookie Policy</a
+                  <a href="#developer" class="text-gray-400 hover:text-white transition duration-300"
+                    >Developers</a
                   >
                 </li>
               </ul>
@@ -1272,14 +1242,7 @@ async function getNetworkUsers() {
           <div
             class="border-t border-gray-700 mt-8 pt-8 flex flex-col md:flex-row justify-between items-center"
           >
-            <p>© 2025 Uzanet. All rights reserved.</p>
-            <div class="mt-4 md:mt-0">
-              <select class="bg-gray-700 text-gray-300 rounded-md py-1 px-2">
-                <option value="en">English</option>
-                <option value="es">Español</option>
-                <option value="fr">Français</option>
-              </select>
-            </div>
+            <p>© {{ currentYear }} Uzanet. All rights reserved.</p>
           </div>
         </div>
       </footer>

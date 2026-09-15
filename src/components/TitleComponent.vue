@@ -15,15 +15,11 @@
     </div>
     <!-- Illustration -->
     <div class="md:w-1/2 flex justify-center mb-6 md:mb-0">
-      <img :src="props.image" alt="Our Services Illustration" class="w-3/4 h-auto" />
+      <img :src="props.image" :alt="`${props.title} illustration`" class="w-3/4 h-auto" />
     </div>
   </section>
 </template>
 <script setup>
-import { ref, defineProps } from 'vue'
-
-const title = ref('')
-const subtitle = ref('')
 const props = defineProps({
   title: {
     type: String,

@@ -25,8 +25,8 @@ function destinationFor(anchor) {
   }
   if (text === 'Learn more') {
     const title = serviceTitle(anchor)
-    if (title === 'ISP Software Suite') return onboardingUrl
     if (title === 'API as a Service') return apiDocsUrl
+    return onboardingUrl
   }
   return ''
 }
